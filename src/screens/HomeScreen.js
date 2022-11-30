@@ -1,21 +1,23 @@
-import React, { PureComponent } from "react";
-import { StyleSheet, Text, View, FlatList, Image } from "react-native";
-import { Colors, Theme } from "../Theme";
-import { ActivityIndicator, Searchbar, Card } from "react-native-paper";
-import { wikiService } from "../services/WikiService";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, {PureComponent} from 'react';
+import {StyleSheet, Text, View, FlatList, Image} from 'react-native';
+import {Colors, Theme} from '../Theme';
+import {ActivityIndicator, Searchbar, Card} from 'react-native-paper';
+import {wikiService} from '../services/WikiService';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {addFavoriteAction, removeFavoriteAction} from '../redux/FavoritesSlice';
+import {connect} from 'react-redux';
 
-export default class HomeScreen extends PureComponent {
+class HomeScreen extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      searchQuery: "react native",
+      searchQuery: 'react native',
       searchPending: false,
     };
   }
   // --------------------------------------------------- render methods
   render() {
-    const { searchQuery, searchPending, errorMsg, searchResultPages } =
+    const {searchQuery, searchPending, errorMsg, searchResultPages} =
       this.state;
     return (
       <SafeAreaView style={styles.container}>
@@ -45,17 +47,17 @@ export default class HomeScreen extends PureComponent {
     );
   }
   // --------------------------------------------------- handlers
-  renderPageCard = ({ item, index }) => {
+  renderPageCard = ({item, index}) => {
     return (
       <Card style={styles.card}>
         <Card.Title
           title={item.title}
           subtitle={item.description}
-          left={(props) => (
+          left={props => (
             <Image
               {...props}
-              source={{ uri: item.thumbnail && item.thumbnail.source }}
-              style={{ height: 45, width: 45, backgroundColor: "#ddd" }}
+              source={{uri: item.thumbnail && item.thumbnail.source}}
+              style={{height: 45, width: 45, backgroundColor: '#ddd'}}
             />
           )}
         />
@@ -63,17 +65,17 @@ export default class HomeScreen extends PureComponent {
     );
   };
 
-  onChangeText = (query) => {
+  onChangeText = query => {
     if (!query || query.length === 0) {
-      this.setState({ searchResultPages: false, errorMsg: false });
+      this.setState({searchResultPages: false, errorMsg: false});
     }
-    this.setState({ searchQuery: query });
+    this.setState({searchQuery: query});
   };
 
   onSearch = async () => {
-    const { searchQuery } = this.state;
+    const {searchQuery} = this.state;
     if (!searchQuery || searchQuery.trim().length === 0) {
-      this.setState({ searchResultPages: false, errorMsg: false });
+      this.setState({searchResultPages: false, errorMsg: false});
       return;
     }
 
@@ -85,9 +87,9 @@ export default class HomeScreen extends PureComponent {
 
     try {
       const searchResultPages = await wikiService.search(searchQuery.trim());
-      this.setState({ searchPending: false, searchResultPages });
+      this.setState({searchPending: false, searchResultPages});
     } catch (error) {
-      console.error("Error while searching wikipedia", error);
+      console.error('Error while searching wikipedia', error);
       this.setState({
         searchPending: false,
         errorMsg:
@@ -97,18 +99,18 @@ export default class HomeScreen extends PureComponent {
   };
 
   onLoadMore = async () => {
-    let { searchResultPages, searchQuery } = this.state;
-    this.setState({ errorMsg: false });
+    let {searchResultPages, searchQuery} = this.state;
+    this.setState({errorMsg: false});
 
     try {
       const moreResultPages = await wikiService.search(
         searchQuery.trim(),
-        searchResultPages.length
+        searchResultPages.length,
       );
       searchResultPages = searchResultPages.concat(moreResultPages);
-      this.setState({ searchResultPages });
+      this.setState({searchResultPages});
     } catch (error) {
-      console.error("Error while searching wikipedia", error);
+      console.error('Error while searching wikipedia', error);
       this.setState({
         errorMsg:
           "Une erreur s'est produite lors de la recherche.\nMerci de bien vouloir réessayer ultérieurement !",
@@ -120,7 +122,7 @@ export default class HomeScreen extends PureComponent {
   /**
    * to make each component unique
    */
-  _keyExtractor = (item, index) => item.pageid.toString() + "_" + index;
+  _keyExtractor = (item, index) => item.pageid.toString() + '_' + index;
 }
 
 const styles = StyleSheet.create({
@@ -131,13 +133,32 @@ const styles = StyleSheet.create({
   },
   searchResultsContainer: {
     marginTop: 20,
-    alignSelf: "stretch",
+    alignSelf: 'stretch',
   },
   errorMsg: {
     color: Colors.error,
   },
   card: {
     margin: 5,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: '#f9f9f9',
   },
 });
+
+const mapStateToProps = state => {
+  return {
+    pages: state.favorites,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    addFavoriteAction: payload => {
+      dispatch(addFavoriteAction(payload));
+    },
+    removeFavoriteAction: payload => {
+      dispatch(removeFavoriteAction(payload));
+    },
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
