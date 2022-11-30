@@ -30,7 +30,7 @@ class HomeScreen extends PureComponent {
       searchResultPages &&
       searchResultPages.map(page => {
         const newPage = {...page};
-        newPage.isFavorite = favoritePageIds.indexOf(page.pageid) >= 0;
+        newPage.isFavorite = favoritePageIds?.indexOf(page.pageid) >= 0;
         return newPage;
       });
 
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
   return {
-    favoritePageIds: state.favorites.pages.map(p => p.pageid),
+    favoritePageIds: state?.favorites?.pages?.map(p => p.pageid),
   };
 };
 
