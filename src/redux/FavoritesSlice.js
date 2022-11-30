@@ -9,12 +9,16 @@ const favoritesSlice = createSlice({
   },
   reducers: {
     addFavoriteAction(state, action) {
-      Logger.debug(`Adding page ${action.page.pageid} to favorites`);
-      // TODO : ajouter au state la page passée dans l'action
+      const page = action.payload;
+      Logger.debug(`Adding page ${page.pageid} to favorites`);
+      // Ajouter au state la page passée dans l'action
+      state.pages.push(page);
     },
     removeFavoriteAction(state, action) {
-      Logger.debug(`Removing page ${action.page.pageid} from favorite`);
-      // TODO : retirer du state la page passée dans l'action
+      const page = action.payload;
+      Logger.debug(`Removing page ${page.pageid} from favorite`);
+      // Retirer du state la page passée dans l'action
+      state.pages = state.pages.filter(p => p.pageid !== page.pageid);
     },
   },
 });

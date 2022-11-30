@@ -1,7 +1,12 @@
 import React, {PureComponent} from 'react';
 import {StyleSheet, Text, View, FlatList, Image} from 'react-native';
 import {Colors, Theme} from '../Theme';
-import {ActivityIndicator, Searchbar, Card} from 'react-native-paper';
+import {
+  ActivityIndicator,
+  Searchbar,
+  Card,
+  IconButton,
+} from 'react-native-paper';
 import {wikiService} from '../services/WikiService';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {addFavoriteAction, removeFavoriteAction} from '../redux/FavoritesSlice';
@@ -19,6 +24,16 @@ class HomeScreen extends PureComponent {
   render() {
     const {searchQuery, searchPending, errorMsg, searchResultPages} =
       this.state;
+
+    const {favoritePageIds} = this.props;
+    const resultWithFavorites =
+      searchResultPages &&
+      searchResultPages.map(page => {
+        const newPage = {...page};
+        newPage.isFavorite = favoritePageIds.indexOf(page.pageid) >= 0;
+        return newPage;
+      });
+
     return (
       <SafeAreaView style={styles.container}>
         <Searchbar
@@ -35,7 +50,7 @@ class HomeScreen extends PureComponent {
               <Text>Aucun résultat trouvé :-( </Text>
             ) : (
               <FlatList
-                data={searchResultPages}
+                data={resultWithFavorites}
                 renderItem={this.renderPageCard}
                 keyExtractor={this._keyExtractor}
                 onEndReached={this.onLoadMore}
@@ -58,6 +73,14 @@ class HomeScreen extends PureComponent {
               {...props}
               source={{uri: item.thumbnail && item.thumbnail.source}}
               style={{height: 45, width: 45, backgroundColor: '#ddd'}}
+            />
+          )}
+          right={props => (
+            <IconButton
+              icon={item.isFavorite ? 'heart' : 'heart-outline'}
+              color={Colors.gray}
+              size={30}
+              onPress={() => this.onToggleFavorite(item)}
             />
           )}
         />
@@ -118,6 +141,14 @@ class HomeScreen extends PureComponent {
     }
   };
 
+  onToggleFavorite = page => {
+    if (page.isFavorite) {
+      this.props.removeFavoriteAction(page);
+    } else {
+      this.props.addFavoriteAction(page);
+    }
+  };
+
   // --------------------------------------------------- privates
   /**
    * to make each component unique
@@ -146,7 +177,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
   return {
-    pages: state.favorites,
+    favoritePageIds: state.favorites.pages.map(p => p.pageid),
   };
 };
 
