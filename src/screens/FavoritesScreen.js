@@ -1,5 +1,5 @@
 import React, {PureComponent} from 'react';
-import {FlatList, Image, StyleSheet, View} from 'react-native';
+import {FlatList, Image, LayoutAnimation, StyleSheet, View} from 'react-native';
 import {connect} from 'react-redux';
 import {Card, IconButton, Text, Title} from 'react-native-paper';
 import Screen from '../components/Screen';
@@ -27,7 +27,7 @@ class FavoritesScreen extends PureComponent {
                 data={favoritePages}
                 style={styles.list}
                 renderItem={this.renderPageCard}
-                keyExtractor={(item, index) => index.toString()}
+                keyExtractor={(item, index) => item.pageid}
               />
             ))}
         </View>
@@ -64,6 +64,7 @@ class FavoritesScreen extends PureComponent {
   };
 
   toggleFavorite = page => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     this.props.removeFavoriteAction(page);
   };
 }

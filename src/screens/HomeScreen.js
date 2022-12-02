@@ -1,5 +1,12 @@
 import React, {PureComponent} from 'react';
-import {StyleSheet, Text, View, FlatList, Image} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Image,
+  LayoutAnimation,
+} from 'react-native';
 import {Colors, Theme} from '../Theme';
 import {
   ActivityIndicator,
@@ -148,6 +155,7 @@ const mapStateToProps = state => {
     ...p,
     isFavorite: favorifavoritePageIds.indexOf(p.pageid) >= 0,
   }));
+  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
   return {
     pages,
     searchPending,
