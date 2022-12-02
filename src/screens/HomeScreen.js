@@ -19,6 +19,7 @@ import {addFavoriteAction, removeFavoriteAction} from '../redux/FavoritesSlice';
 import {connect} from 'react-redux';
 import {resetWikiSearchAction, searchWikiAction} from '../redux/WikiSlice';
 import * as Animatable from 'react-native-animatable';
+import FavoriteButton from '../components/FavoriteButton';
 
 class HomeScreen extends PureComponent {
   constructor(props) {
@@ -79,16 +80,10 @@ class HomeScreen extends PureComponent {
             />
           )}
           right={props => (
-            <Animatable.View
-              animation={item.isFavorite ? 'pulse' : ''}
-              iterationCount={3}>
-              <IconButton
-                icon={item.isFavorite ? 'heart' : 'heart-outline'}
-                color={Colors.gray}
-                size={30}
-                onPress={() => this.onToggleFavorite(item)}
-              />
-            </Animatable.View>
+            <FavoriteButton
+              isFavorite={item.isFavorite}
+              onPress={() => this.onToggleFavorite(item)}
+            />
           )}
         />
       </Card>

@@ -1,9 +1,9 @@
 import React, {PureComponent} from 'react';
 import {FlatList, Image, LayoutAnimation, StyleSheet, View} from 'react-native';
+import {Card, Text, Title} from 'react-native-paper';
 import {connect} from 'react-redux';
-import {Card, IconButton, Text, Title} from 'react-native-paper';
+import FavoriteButton from '../components/FavoriteButton';
 import Screen from '../components/Screen';
-import {Colors} from '../Theme';
 import {removeFavoriteAction} from '../redux/FavoritesSlice';
 
 class FavoritesScreen extends PureComponent {
@@ -51,11 +51,9 @@ class FavoritesScreen extends PureComponent {
             />
           )}
           right={props => (
-            <IconButton
-              icon={'heart'}
-              color={Colors.gray}
-              size={30}
-              onPress={() => this.toggleFavorite(item)}
+            <FavoriteButton
+              isFavorite={true}
+              onPress={() => this.onToggleFavorite(item)}
             />
           )}
         />
@@ -63,7 +61,7 @@ class FavoritesScreen extends PureComponent {
     );
   };
 
-  toggleFavorite = page => {
+  onToggleFavorite = page => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     this.props.removeFavoriteAction(page);
   };
