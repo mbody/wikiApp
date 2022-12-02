@@ -99,8 +99,7 @@ class HomeScreen extends PureComponent {
 
   onLoadMore = async () => {
     let {searchQuery} = this.state;
-    let {searchResult} = this.state;
-    this.props.searchWikiAction(searchQuery.trim(), searchResult.length);
+    this.props.searchWikiAction(searchQuery.trim(), this.props.pages.length);
   };
 
   onToggleFavorite = page => {
