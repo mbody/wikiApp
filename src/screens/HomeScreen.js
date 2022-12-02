@@ -18,6 +18,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {addFavoriteAction, removeFavoriteAction} from '../redux/FavoritesSlice';
 import {connect} from 'react-redux';
 import {resetWikiSearchAction, searchWikiAction} from '../redux/WikiSlice';
+import * as Animatable from 'react-native-animatable';
 
 class HomeScreen extends PureComponent {
   constructor(props) {
@@ -34,12 +35,16 @@ class HomeScreen extends PureComponent {
 
     return (
       <SafeAreaView style={styles.container}>
-        <Searchbar
-          placeholder="Rechercher"
-          onChangeText={this.onChangeText}
-          onIconPress={this.onSearch}
-          value={searchQuery}
-        />
+        <Animatable.View
+          ref={me => (this.searchBar = me)}
+          style={styles.animatedSearchBar}>
+          <Searchbar
+            placeholder="Rechercher"
+            onChangeText={this.onChangeText}
+            onIconPress={this.onSearch}
+            value={searchQuery}
+          />
+        </Animatable.View>
 
         <View style={styles.searchResultsContainer}>
           {errorMsg && <Text style={styles.errorMsg}>{errorMsg}</Text>}
@@ -74,12 +79,16 @@ class HomeScreen extends PureComponent {
             />
           )}
           right={props => (
-            <IconButton
-              icon={item.isFavorite ? 'heart' : 'heart-outline'}
-              color={Colors.gray}
-              size={30}
-              onPress={() => this.onToggleFavorite(item)}
-            />
+            <Animatable.View
+              animation={item.isFavorite ? 'pulse' : ''}
+              iterationCount={3}>
+              <IconButton
+                icon={item.isFavorite ? 'heart' : 'heart-outline'}
+                color={Colors.gray}
+                size={30}
+                onPress={() => this.onToggleFavorite(item)}
+              />
+            </Animatable.View>
           )}
         />
       </Card>
@@ -98,6 +107,7 @@ class HomeScreen extends PureComponent {
 
     if (!searchQuery || searchQuery.trim().length === 0) {
       this.props.resetWikiSearchAction();
+      this.shakeSearchBar();
       return;
     }
 
@@ -118,6 +128,9 @@ class HomeScreen extends PureComponent {
   };
 
   // --------------------------------------------------- privates
+  shakeSearchBar() {
+    this.searchBar.shake(1000);
+  }
   /**
    * to make each component unique
    */
@@ -146,6 +159,7 @@ const styles = StyleSheet.create({
     width: 45,
     backgroundColor: '#ddd',
   },
+  animatedSearchBar: {alignSelf: 'stretch'},
 });
 
 const mapStateToProps = state => {
