@@ -1,5 +1,5 @@
-import React, { PureComponent } from "react";
-import Screen from "../components/Screen";
+import React, {PureComponent} from 'react';
+import Screen from '../components/Screen';
 
 export default class HistoryScreen extends PureComponent {
   constructor(props) {

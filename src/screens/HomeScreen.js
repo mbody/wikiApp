@@ -7,10 +7,10 @@ import {
   Card,
   IconButton,
 } from 'react-native-paper';
-import {wikiService} from '../services/WikiService';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {addFavoriteAction, removeFavoriteAction} from '../redux/FavoritesSlice';
 import {connect} from 'react-redux';
+import {resetWikiSearchAction, searchWikiAction} from '../redux/WikiSlice';
 
 class HomeScreen extends PureComponent {
   constructor(props) {
@@ -22,17 +22,8 @@ class HomeScreen extends PureComponent {
   }
   // --------------------------------------------------- render methods
   render() {
-    const {searchQuery, searchPending, errorMsg, searchResultPages} =
-      this.state;
-
-    const {favoritePageIds} = this.props;
-    const resultWithFavorites =
-      searchResultPages &&
-      searchResultPages.map(page => {
-        const newPage = {...page};
-        newPage.isFavorite = favoritePageIds?.indexOf(page.pageid) >= 0;
-        return newPage;
-      });
+    const {searchQuery} = this.state;
+    const {searchPending, pages, errorMsg} = this.props;
 
     return (
       <SafeAreaView style={styles.container}>
@@ -45,12 +36,12 @@ class HomeScreen extends PureComponent {
 
         <View style={styles.searchResultsContainer}>
           {errorMsg && <Text style={styles.errorMsg}>{errorMsg}</Text>}
-          {searchResultPages &&
-            (searchResultPages.length === 0 ? (
+          {pages &&
+            (pages.length === 0 ? (
               <Text>Aucun résultat trouvé :-( </Text>
             ) : (
               <FlatList
-                data={resultWithFavorites}
+                data={pages}
                 renderItem={this.renderPageCard}
                 keyExtractor={this._keyExtractor}
                 onEndReached={this.onLoadMore}
@@ -72,7 +63,7 @@ class HomeScreen extends PureComponent {
             <Image
               {...props}
               source={{uri: item.thumbnail && item.thumbnail.source}}
-              style={{height: 45, width: 45, backgroundColor: '#ddd'}}
+              style={styles.image}
             />
           )}
           right={props => (
@@ -90,55 +81,26 @@ class HomeScreen extends PureComponent {
 
   onChangeText = query => {
     if (!query || query.length === 0) {
-      this.setState({searchResultPages: false, errorMsg: false});
+      this.props.resetWikiSearchAction();
     }
     this.setState({searchQuery: query});
   };
 
   onSearch = async () => {
     const {searchQuery} = this.state;
+
     if (!searchQuery || searchQuery.trim().length === 0) {
-      this.setState({searchResultPages: false, errorMsg: false});
+      this.props.resetWikiSearchAction();
       return;
     }
 
-    this.setState({
-      searchPending: true,
-      searchResultPages: false,
-      errorMsg: false,
-    });
-
-    try {
-      const searchResultPages = await wikiService.search(searchQuery.trim());
-      this.setState({searchPending: false, searchResultPages});
-    } catch (error) {
-      console.error('Error while searching wikipedia', error);
-      this.setState({
-        searchPending: false,
-        errorMsg:
-          "Une erreur s'est produite lors de la recherche.\nMerci de bien vouloir réessayer ultérieurement !",
-      });
-    }
+    this.props.searchWikiAction(searchQuery.trim(), 0);
   };
 
   onLoadMore = async () => {
-    let {searchResultPages, searchQuery} = this.state;
-    this.setState({errorMsg: false});
-
-    try {
-      const moreResultPages = await wikiService.search(
-        searchQuery.trim(),
-        searchResultPages.length,
-      );
-      searchResultPages = searchResultPages.concat(moreResultPages);
-      this.setState({searchResultPages});
-    } catch (error) {
-      console.error('Error while searching wikipedia', error);
-      this.setState({
-        errorMsg:
-          "Une erreur s'est produite lors de la recherche.\nMerci de bien vouloir réessayer ultérieurement !",
-      });
-    }
+    let {searchQuery} = this.state;
+    let {searchResult} = this.state;
+    this.props.searchWikiAction(searchQuery.trim(), searchResult.length);
   };
 
   onToggleFavorite = page => {
@@ -173,16 +135,37 @@ const styles = StyleSheet.create({
     margin: 5,
     backgroundColor: '#f9f9f9',
   },
+  image: {
+    height: 45,
+    width: 45,
+    backgroundColor: '#ddd',
+  },
 });
 
 const mapStateToProps = state => {
+  const favorifavoritePageIds = state?.favorites?.pages?.map(p => p.pageid);
+  const {error, searchPending, searchResult} = state?.wiki;
+  const pages = searchResult?.map(p => ({
+    ...p,
+    isFavorite: favorifavoritePageIds.indexOf(p.pageid) >= 0,
+  }));
   return {
-    favoritePageIds: state?.favorites?.pages?.map(p => p.pageid),
+    pages,
+    searchPending,
+    errorMsg:
+      error &&
+      "Une erreur s'est produite lors de la recherche.\nMerci de bien vouloir réessayer ultérieurement !",
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
+    searchWikiAction: (keyword, offset) => {
+      dispatch(searchWikiAction({keyword, offset}));
+    },
+    resetWikiSearchAction: () => {
+      dispatch(resetWikiSearchAction());
+    },
     addFavoriteAction: payload => {
       dispatch(addFavoriteAction(payload));
     },
