@@ -68,7 +68,7 @@ class HomeScreen extends PureComponent {
   // --------------------------------------------------- handlers
   renderPageCard = ({item, index}) => {
     return (
-      <Card style={styles.card}>
+      <Card style={styles.card} accessible={false}>
         <Card.Title
           title={item.title}
           subtitle={item.description}
